@@ -1,10 +1,15 @@
 package mongo_query_test.mongo_query_test;
 
+import java.security.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
@@ -30,6 +35,9 @@ public class MongoDBTester {
 			MongoDatabase db = client.getDatabase(database);
 			MongoCollection<Document> coll = db.getCollection(collection);
 						
+			
+			/*****************************	PART-1: Date Match	*************************************************/
+//			Date matches
 			String dt = "1989-06-10T00:00:00.000+0000";
 			
 			Date dayStart = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXX").parse(dt);
@@ -38,12 +46,36 @@ public class MongoDBTester {
 			BasicDBObject dbo = new BasicDBObject("DOB", new BasicDBObject("$gt", dayStart))
 								.append("DOB", new BasicDBObject("$lte", dayEnd));
 			
-			FindIterable<Document> doc = coll.find(dbo);
+			FindIterable<Document> docs = coll.find(dbo);
+								
+			for (Document dox : docs) {
+				System.out.println(dox.toJson());
+			}
+			
+			/*****************************	PART-2: Get max record	*************************************************/
+			
+			BasicDBObject	bdbo	=	new BasicDBObject();			
+			dbo.append("Age", new BasicDBObject("$gt",30));	// mention cusip here			
+			FindIterable<Document> doc = coll.find(bdbo);						
+			int max = 0;
+			String p = null; 
 			
 			for (Document dox : doc) {
-				System.out.println(dox.toJson());
-				System.out.println("Salary: "+dox.get("Sal"));
+//				System.out.println(dox.toJson());
+				
+				if ( dox.getObjectId("_id").getTimestamp() > max ) {
+					max = dox.getObjectId("_id").getTimestamp();
+					p = dox.getObjectId("_id").toHexString();
+					
+				}
+				
 			}		
+			
+			bdbo.put("_id", new ObjectId(p));
+			doc = coll.find(bdbo);
+			Document dox = doc.first();
+			System.out.println("Max Sal: "+dox.get("Sal"));	// max record val
+			
 			
 			
 		}else {
