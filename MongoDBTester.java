@@ -4,6 +4,7 @@ import java.security.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -12,9 +13,13 @@ import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 
 public class MongoDBTester {
 	
@@ -83,4 +88,22 @@ public class MongoDBTester {
 		}
 	}
 
+	public void newTester() {
+		if ( client != null ) {
+			System.out.println("Connection successful!");
+			MongoDatabase db = client.getDatabase(database);
+			MongoCollection<Document> coll = db.getCollection(collection);
+			
+			AggregateIterable<Document> docs = coll.aggregate(
+					Arrays.asList(
+							Aggregates.match(Filters.eq("Dept", "IT")),
+							Aggregates.group("EmpId", Accumulators.max("id", "$_id"))
+							)					
+					);
+			
+			for(Document doc : docs) {
+				System.out.println(doc.toJson());
+			}
+		}
+	}
 }
