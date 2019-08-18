@@ -97,7 +97,8 @@ public class MongoDBTester {
 			AggregateIterable<Document> docs = coll.aggregate(
 					Arrays.asList(
 							Aggregates.match(Filters.eq("Dept", "IT")),
-							Aggregates.group("EmpId", Accumulators.max("id", "$_id"))
+							Aggregates.match(Filters.lte("Age", 30)),
+							Aggregates.group("EmpId", Accumulators.max("id", "$_id"))							
 							)					
 					);
 			
